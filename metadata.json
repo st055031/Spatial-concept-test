@@ -1,0 +1,5 @@
+{
+  "name": "3D Spatial Geometry Explorer",
+  "description": "An interactive 3D visualization tool for exploring spatial coordinate systems, tetrahedrons, pyramids, dihedral angles, and the theorem of three perpendiculars.",
+  "requestFramePermissions": []
+}
