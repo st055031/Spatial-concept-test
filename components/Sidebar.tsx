@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Topic, TopicInfo } from '../types';
-import { Box, Triangle, Grid3X3, Layers, Ruler, Compass, GraduationCap } from 'lucide-react';
+import { Box, Triangle, Grid3X3, Layers, Ruler, Compass, GraduationCap, Hexagon } from 'lucide-react';
 
 interface SidebarProps {
   topics: TopicInfo[];
@@ -17,6 +16,7 @@ const TopicIcon = ({ topic }: { topic: Topic }) => {
     case Topic.ThreePerpendiculars: return <Ruler size={20} />;
     case Topic.CoordinateSystem: return <Grid3X3 size={20} />;
     case Topic.PlaneIntersections: return <Layers size={20} />;
+    case Topic.CubeCrossSection: return <Hexagon size={20} />;
     default: return <GraduationCap size={20} />;
   }
 };
