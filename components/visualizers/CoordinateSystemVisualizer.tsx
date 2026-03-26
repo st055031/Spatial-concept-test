@@ -1,11 +1,5 @@
 import React, { useMemo } from 'react';
 import { Html, Line, Sphere } from '@react-three/drei';
-import * as THREE from 'three';
-
-const Group = 'group' as any;
-const Mesh = 'mesh' as any;
-const BoxGeometry = 'boxGeometry' as any;
-const MeshStandardMaterial = 'meshStandardMaterial' as any;
 
 const CoordinateSystemVisualizer: React.FC = () => {
   // 使用者定義映射：藍=X, 紅=Y, 綠=Z
@@ -27,7 +21,7 @@ const CoordinateSystemVisualizer: React.FC = () => {
   }, []);
 
   return (
-    <Group>
+    <group>
       {/* 座標軸基礎線 */}
       <Line points={[[-1, 0, 0], [6, 0, 0]]} color="#ef4444" lineWidth={3} /> {/* User Y (Red) */}
       <Line points={[[0, -1, 0], [0, 6, 0]]} color="#22c55e" lineWidth={3} /> {/* User Z (Green) */}
@@ -35,7 +29,7 @@ const CoordinateSystemVisualizer: React.FC = () => {
 
       {/* 單位刻度與數字標籤 */}
       {ticks.map((val) => (
-        <Group key={`ticks-${val}`}>
+        <group key={`ticks-${val}`}>
           {/* User X (Blue) - Along Three Z */}
           <Line points={[[-0.1, 0, val], [0.1, 0, val]]} color="#3b82f6" lineWidth={2} />
           <Html position={[0.3, 0, val]} center>
@@ -53,7 +47,7 @@ const CoordinateSystemVisualizer: React.FC = () => {
           <Html position={[0.3, val, 0]} center>
             <span className="text-[10px] font-black text-green-600 bg-white/50 px-1 rounded whitespace-nowrap">{val}</span>
           </Html>
-        </Group>
+        </group>
       ))}
 
       {/* 座標原點標籤 */}
@@ -62,14 +56,14 @@ const CoordinateSystemVisualizer: React.FC = () => {
       </Html>
 
       {/* 目標點 P */}
-      <Group position={point}>
-        <Sphere args={[0.15]}><MeshStandardMaterial color="#1e293b" /></Sphere>
+      <group position={point}>
+        <Sphere args={[0.15]}><meshStandardMaterial color="#1e293b" /></Sphere>
         <Html distanceFactor={10} center>
           <div className="bg-slate-900/90 text-white px-2 py-1 rounded shadow-lg text-[10px] font-mono font-black border border-white/20 translate-y-6 whitespace-nowrap">
             P ({userX}, {userY}, {userZ})
           </div>
         </Html>
-      </Group>
+      </group>
       
       {/* 投影線 */}
       <Line points={[point, [userY, userZ, 0]]} color="#94a3b8" lineWidth={1} dashed dashScale={15} opacity={0.5} transparent /> 
@@ -80,13 +74,13 @@ const CoordinateSystemVisualizer: React.FC = () => {
       <Line points={[[userY, 0, 0], [userY, 0, userX], [0, 0, userX]]} color="#94a3b8" lineWidth={1} dashed dashScale={15} opacity={0.3} transparent />
       <Line points={[[0, userZ, 0], [userY, userZ, 0], [userY, 0, 0]]} color="#94a3b8" lineWidth={1} dashed dashScale={15} opacity={0.3} transparent />
 
-      <Mesh position={[userY/2, userZ/2, userX/2]}>
-        <BoxGeometry args={[userY, userZ, userX]} />
-        <MeshStandardMaterial color="#6366f1" transparent opacity={0.05} />
-      </Mesh>
+      <mesh position={[userY/2, userZ/2, userX/2]}>
+        <boxGeometry args={[userY, userZ, userX]} />
+        <meshStandardMaterial color="#6366f1" transparent opacity={0.05} />
+      </mesh>
 
       {/* 資訊面板 */}
-      <Group position={[0, 4.5, 0]}>
+      <group position={[0, 4.5, 0]}>
         <Html center>
           <div className="bg-white/90 backdrop-blur-2xl p-6 rounded-[2rem] border border-white/50 shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-[640px] max-w-[95vw] select-none flex flex-col md:flex-row gap-6 items-stretch overflow-hidden">
             
@@ -119,8 +113,8 @@ const CoordinateSystemVisualizer: React.FC = () => {
             </div>
           </div>
         </Html>
-      </Group>
-    </Group>
+      </group>
+    </group>
   );
 };
 
