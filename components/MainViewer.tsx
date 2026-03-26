@@ -12,7 +12,7 @@ import FoldingRectangleVisualizer from './visualizers/FoldingRectangleVisualizer
 import FoldingSquareVisualizer from './visualizers/FoldingSquareVisualizer';
 import OctahedronInCubeVisualizer from './visualizers/OctahedronInCubeVisualizer';
 import StellaOctangulaVisualizer from './visualizers/StellaOctangulaVisualizer';
-import CubeCrossSectionVisualizer from './visualizers/CubeCrossSectionVisualizer'; // 💡 新增引入
+import CubeCrossSectionVisualizer from './visualizers/CubeCrossSectionVisualizer';
 
 // Fix: Define intrinsic elements as local constants to bypass JSX type checking issues
 const AmbientLight = 'ambientLight' as any;
@@ -36,13 +36,22 @@ const Scene: React.FC<{ topic: Topic }> = ({ topic }) => {
     case Topic.FoldingSquare: return <FoldingSquareVisualizer />;
     case Topic.OctahedronInCube: return <OctahedronInCubeVisualizer />;
     case Topic.StellaOctangula: return <StellaOctangulaVisualizer />;
-    case Topic.CubeCrossSection: return <CubeCrossSectionVisualizer />; // 💡 新增對應組件
+    // 注意：這裡已經把 CubeCrossSection 拿掉了，改到下方獨立處理
     default: return null;
   }
 };
 
 const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
-  // 💡 已經將 iframe 徹底移除，統一交給 Canvas 處理
+  // 💡 提早攔截：如果是正方體截面，直接回傳帶有 HTML 的獨立組件，不進入 Canvas
+  if (topic === Topic.CubeCrossSection) {
+    return (
+      <div className="w-full h-full relative">
+        <CubeCrossSectionVisualizer />
+      </div>
+    );
+  }
+
+  // 其他主題維持原本的 3D Canvas 渲染
   return (
     <div className="w-full h-full relative cursor-move">
       <Canvas shadows dpr={[1, 2]} className="bg-slate-50">
