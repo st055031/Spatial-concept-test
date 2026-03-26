@@ -8,7 +8,8 @@ export enum Topic {
   FoldingRectangle = 'FoldingRectangle',
   FoldingSquare = 'FoldingSquare',
   OctahedronInCube = 'OctahedronInCube',
-  StellaOctangula = 'StellaOctangula'
+  StellaOctangula = 'StellaOctangula',
+  CubeCrossSection = 'CubeCrossSection' // 新增這行
 }
 
 export interface TopicInfo {
