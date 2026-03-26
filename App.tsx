@@ -8,6 +8,7 @@ import { Box, Triangle, Grid3X3, Layers, Ruler, Compass, Package } from 'lucide-
 const TOPICS: TopicInfo[] = [
   { id: Topic.StellaOctangula, title: '正方體與對偶四面體', description: '觀察正方體中交錯頂點構成的兩個正四面體' },
   { id: Topic.OctahedronInCube, title: '立方體與正八面體', description: '觀察立方體面中心構成的八面體' },
+  { id: Topic.CubeCrossSection, title: '正方體截面視覺化', description: '線上 3D 立體圖形觀察與動態截面互動' },
   { id: Topic.CoordinateSystem, title: '空間坐標系', description: '基礎三軸與點投影' },
   { id: Topic.FoldingRectangle, title: '矩形摺疊問題', description: '矩形沿對角線摺疊至平面垂直' },
   { id: Topic.FoldingSquare, title: '正方形摺疊問題', description: '正方形摺疊與二面角計算' },
