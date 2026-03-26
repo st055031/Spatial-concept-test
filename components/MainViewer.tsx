@@ -40,13 +40,12 @@ const Scene: React.FC<{ topic: Topic }> = ({ topic }) => {
 };
 
 const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
-  // --- 修改的部分：使用最純粹的獨立應用程式網址 ---
   if (topic === Topic.CubeCrossSection) {
     return (
       <div className="w-full h-full relative bg-white">
         <iframe 
-          // 💡 改用 .csb.app 結尾的網址，徹底移除所有 CodeSandbox 介面
-          src="https://relaxed-dew-2qzkwg.csb.app/" 
+          // 💡 加回 embed，並補上 hidedevtools=1 與 hidenavigation=1 徹底隱藏所有編輯面板
+          src="https://codesandbox.io/embed/relaxed-dew-2qzkwg?view=preview&hidenavigation=1&hidedevtools=1&theme=light" 
           className="w-full h-full border-0 block"
           title="正方體截面視覺化"
           style={{ height: '100%', minHeight: '600px' }} 
@@ -56,7 +55,6 @@ const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
       </div>
     );
   }
-  // --- 修改結束 ---
 
   // 其他主題維持原本的 3D Canvas 渲染
   return (
