@@ -40,6 +40,22 @@ const Scene: React.FC<{ topic: Topic }> = ({ topic }) => {
 };
 
 const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
+  // 攔截「正方體截面視覺化」，改為渲染 iframe
+  if (topic === Topic.CubeCrossSection) {
+    return (
+      <div className="w-full h-full relative bg-white">
+        <iframe 
+          src="https://2qzkwg.csb.app/" 
+          className="w-full h-full border-0 block"
+          title="正方體截面視覺化"
+          allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" 
+          sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+        />
+      </div>
+    );
+  }
+
+  // 其他主題維持原本的 3D Canvas 渲染
   return (
     <div className="w-full h-full relative cursor-move">
       <Canvas shadows dpr={[1, 2]} className="bg-slate-50">
