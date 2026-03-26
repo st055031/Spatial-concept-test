@@ -40,17 +40,16 @@ const Scene: React.FC<{ topic: Topic }> = ({ topic }) => {
 };
 
 const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
-  // --- 修改的部分：使用更穩定、純預覽介面的嵌入網址 ---
+  // --- 修改的部分：使用最純粹的獨立應用程式網址 ---
   if (topic === Topic.CubeCrossSection) {
     return (
-      // 使用白色背景容器，確保即使 iframe 載入中也不會黑白切換
       <div className="w-full h-full relative bg-white">
         <iframe 
-          // 💡 更新了 src 網址，強制純預覽、隱藏導航列、使用淺色主題
-          src="https://codesandbox.io/embed/relaxed-dew-2qzkwg?view=preview&hidenavigation=1&theme=light" 
+          // 💡 改用 .csb.app 結尾的網址，徹底移除所有 CodeSandbox 介面
+          src="https://relaxed-dew-2qzkwg.csb.app/" 
           className="w-full h-full border-0 block"
           title="正方體截面視覺化"
-          style={{ height: '100%', minHeight: '600px' }} // 確保高度足夠且撐滿
+          style={{ height: '100%', minHeight: '600px' }} 
           allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking" 
           sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
         />
