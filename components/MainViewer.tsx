@@ -40,14 +40,14 @@ const Scene: React.FC<{ topic: Topic }> = ({ topic }) => {
 };
 
 const MainViewer: React.FC<MainViewerProps> = ({ topic }) => {
-  // --- 修改的部分：使用更穩定、包含編輯器介面的嵌入網址 ---
+  // --- 修改的部分：使用更穩定、純預覽介面的嵌入網址 ---
   if (topic === Topic.CubeCrossSection) {
     return (
       // 使用白色背景容器，確保即使 iframe 載入中也不會黑白切換
       <div className="w-full h-full relative bg-white">
         <iframe 
-          // 💡 更新了 src 網址，改用 /embed/ 並加上介面設定
-          src="https://codesandbox.io/embed/relaxed-dew-2qzkwg?view=editor+%2B+preview" 
+          // 💡 更新了 src 網址，強制純預覽、隱藏導航列、使用淺色主題
+          src="https://codesandbox.io/embed/relaxed-dew-2qzkwg?view=preview&hidenavigation=1&theme=light" 
           className="w-full h-full border-0 block"
           title="正方體截面視覺化"
           style={{ height: '100%', minHeight: '600px' }} // 確保高度足夠且撐滿
