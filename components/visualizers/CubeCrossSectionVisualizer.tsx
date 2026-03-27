@@ -27,7 +27,8 @@ export default function CubeCrossSectionVisualizer() {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xdbeafe); // bg-blue-100 equivalent
+    // 💡 修改 1：將原本的 0xdbeafe 改為純白色 0xffffff
+    scene.background = new THREE.Color(0xffffff); 
 
     const camera = new THREE.PerspectiveCamera(45, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 100);
     camera.position.set(5, 5, 8);
@@ -322,7 +323,8 @@ export default function CubeCrossSectionVisualizer() {
         </div>
       </div>
 
-      <div className="flex-1 relative bg-gradient-to-br from-slate-50 to-slate-200/50">
+      {/* 💡 修改 2：將 bg-gradient-to-br from-slate-50 to-slate-200/50 改為 bg-white */}
+      <div className="flex-1 relative bg-white">
         <div ref={containerRef} className="absolute inset-0 cursor-move" />
         
         <div className="absolute top-6 right-6 z-10">
