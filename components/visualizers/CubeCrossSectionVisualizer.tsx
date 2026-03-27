@@ -1,252 +1,122 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Html, Edges, Line } from '@react-three/drei';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { Layers, Info, Rotate3d, CheckCircle2 } from 'lucide-react';
 
+const Group = 'group' as any;
+const Mesh = 'mesh' as any;
+const BoxGeometry = 'boxGeometry' as any;
+const SphereGeometry = 'sphereGeometry' as any;
+const PlaneGeometry = 'planeGeometry' as any;
+const MeshBasicMaterial = 'meshBasicMaterial' as any;
+const MeshStandardMaterial = 'meshStandardMaterial' as any;
+const AmbientLight = 'ambientLight' as any;
+const DirectionalLight = 'directionalLight' as any;
+const PointLight = 'pointLight' as any;
+
+// --- 3D 場景組件 ---
+const CubeScene: React.FC<{ showPlane: boolean; showSection: boolean; autoRotate: boolean }> = ({ showPlane, showSection, autoRotate }) => {
+  const hexVertices = useMemo(() => [
+    new THREE.Vector3(-1.5, 1.5, 0),
+    new THREE.Vector3(0, 1.5, -1.5),
+    new THREE.Vector3(1.5, 0, -1.5),
+    new THREE.Vector3(1.5, -1.5, 0),
+    new THREE.Vector3(0, -1.5, 1.5),
+    new THREE.Vector3(-1.5, 0, 1.5),
+  ], []);
+
+  const hexLinePoints = useMemo(() => {
+    return [...hexVertices, hexVertices[0]].map(v => [v.x, v.y, v.z] as [number, number, number]);
+  }, [hexVertices]);
+
+  const faceGeometry = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [0, 0, 0];
+    hexVertices.forEach(v => vertices.push(v.x, v.y, v.z));
+    const indices = [
+      0, 1, 2,  0, 2, 3,  0, 3, 4,
+      0, 4, 5,  0, 5, 6,  0, 6, 1
+    ];
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    return geo;
+  }, [hexVertices]);
+
+  const planeQuaternion = useMemo(() => {
+    const v1 = new THREE.Vector3().subVectors(hexVertices[1], hexVertices[0]);
+    const v2 = new THREE.Vector3().subVectors(hexVertices[4], hexVertices[0]);
+    const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+    const dummy = new THREE.Object3D();
+    dummy.lookAt(normal);
+    return dummy.quaternion;
+  }, [hexVertices]);
+
+  const labels = [
+    { text: 'A', pos: [-1.8, 1.8, 1.8] }, { text: 'B', pos: [1.8, 1.8, 1.8] },
+    { text: 'C', pos: [-1.8, -1.8, 1.8] }, { text: 'D', pos: [1.8, -1.8, 1.8] },
+    { text: 'E', pos: [-1.8, 1.8, -1.8] }, { text: 'F', pos: [1.8, 1.8, -1.8] },
+    { text: 'G', pos: [-1.8, -1.8, -1.8] }, { text: 'H', pos: [1.8, -1.8, -1.8] }
+  ];
+
+  return (
+    <Group>
+      <AmbientLight intensity={1.2} />
+      <DirectionalLight position={[10, 10, 10]} intensity={1} castShadow />
+      <PointLight position={[-10, 5, -10]} intensity={0.5} />
+      
+      <OrbitControls autoRotate={autoRotate} autoRotateSpeed={1.0} enableDamping dampingFactor={0.05} />
+
+      <Mesh>
+        <BoxGeometry args={[3, 3, 3]} />
+        <MeshBasicMaterial transparent opacity={0} depthWrite={false} />
+        <Edges scale={1} color="#334155" />
+      </Mesh>
+
+      {labels.map((lbl, idx) => (
+         <Html key={idx} position={lbl.pos as [number,number,number]} center>
+           <span className="font-bold text-xl text-slate-500 select-none">{lbl.text}</span>
+         </Html>
+      ))}
+
+      <Mesh position={[-1.5, 1.5, 0]}>
+        <SphereGeometry args={[0.15, 32, 32]} />
+        <MeshStandardMaterial color="#991b1b" roughness={0.3} metalness={0.2} />
+      </Mesh>
+      <Mesh position={[0, 1.5, -1.5]}>
+        <SphereGeometry args={[0.15, 32, 32]} />
+        <MeshStandardMaterial color="#991b1b" roughness={0.3} metalness={0.2} />
+      </Mesh>
+      <Mesh position={[0, -1.5, 1.5]}>
+        <SphereGeometry args={[0.15, 32, 32]} />
+        <MeshStandardMaterial color="#991b1b" roughness={0.3} metalness={0.2} />
+      </Mesh>
+
+      {showSection && (
+        <Group>
+          <Line points={hexLinePoints} color="#047857" lineWidth={3} />
+          <Mesh geometry={faceGeometry}>
+            <MeshBasicMaterial color="#10b981" transparent opacity={0.15} side={THREE.DoubleSide} depthWrite={false} />
+          </Mesh>
+        </Group>
+      )}
+
+      {showPlane && (
+        <Mesh quaternion={planeQuaternion}>
+          <PlaneGeometry args={[15, 15]} />
+          <MeshBasicMaterial color="#3b82f6" transparent opacity={0.1} side={THREE.DoubleSide} depthWrite={false} />
+        </Mesh>
+      )}
+    </Group>
+  );
+};
+
+// --- 主介面與 UI 組件 ---
 export default function CubeCrossSectionVisualizer() {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [showPlane, setShowPlane] = useState(true);
   const [showSection, setShowSection] = useState(true);
   const [autoRotate, setAutoRotate] = useState(true);
-
-  const controlsRef = useRef<OrbitControls | null>(null);
-  const planeRef = useRef<THREE.Mesh | null>(null);
-  const sectionRef = useRef<THREE.Group | null>(null);
-  
-  const stateRef = useRef({ showPlane, showSection, autoRotate });
-
-  useEffect(() => {
-    stateRef.current = { showPlane, showSection, autoRotate };
-    
-    if (controlsRef.current) controlsRef.current.autoRotate = autoRotate;
-    if (planeRef.current) planeRef.current.visible = showPlane;
-    if (sectionRef.current) sectionRef.current.visible = showSection;
-  }, [showPlane, showSection, autoRotate]);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const scene = new THREE.Scene();
-    // 💡 修改 1：將原本的 0xdbeafe 改為純白色 0xffffff
-    scene.background = new THREE.Color(0xffffff); 
-
-    const camera = new THREE.PerspectiveCamera(45, containerRef.current.clientWidth / containerRef.current.clientHeight, 0.1, 100);
-    camera.position.set(5, 5, 8);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
-    containerRef.current.innerHTML = '';
-    containerRef.current.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.autoRotate = stateRef.current.autoRotate;
-    controls.autoRotateSpeed = 1.0;
-    controlsRef.current = controls;
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 20, 10);
-    scene.add(directionalLight);
-    
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.4);
-    fillLight.position.set(-10, 0, -10);
-    scene.add(fillLight);
-
-    const mainGroup = new THREE.Group();
-    scene.add(mainGroup);
-
-    // 1. 建立正方體邊框
-    const size = 3;
-    const geometry = new THREE.BoxGeometry(size, size, size);
-    const edges = new THREE.EdgesGeometry(geometry);
-    const lineMaterial = new THREE.LineBasicMaterial({ 
-      color: 0x334155, // slate-700
-      linewidth: 2
-    });
-    const cubeLines = new THREE.LineSegments(edges, lineMaterial);
-    mainGroup.add(cubeLines);
-
-    // 2. 建立標籤
-    const labels = [
-      { text: 'A', pos: [-1.5, 1.5, 1.5] },
-      { text: 'B', pos: [1.5, 1.5, 1.5] },
-      { text: 'C', pos: [-1.5, -1.5, 1.5] },
-      { text: 'D', pos: [1.5, -1.5, 1.5] },
-      { text: 'E', pos: [-1.5, 1.5, -1.5] },
-      { text: 'F', pos: [1.5, 1.5, -1.5] },
-      { text: 'G', pos: [-1.5, -1.5, -1.5] },
-      { text: 'H', pos: [1.5, -1.5, -1.5] }
-    ];
-
-    const createLabel = (text: string, position: number[]) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 64;
-      canvas.height = 64;
-      const context = canvas.getContext('2d');
-      if (context) {
-        context.font = 'Bold 36px Arial';
-        context.fillStyle = '#64748b'; // slate-500
-        context.textAlign = 'center';
-        context.textBaseline = 'middle';
-        context.fillText(text, 32, 32);
-      }
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-      const sprite = new THREE.Sprite(material);
-      
-      const offset = 0.4;
-      sprite.position.set(
-        position[0] + Math.sign(position[0]) * offset,
-        position[1] + Math.sign(position[1]) * offset,
-        position[2] + Math.sign(position[2]) * offset
-      );
-      sprite.scale.set(1.5, 1.5, 1.5);
-      return sprite;
-    };
-
-    labels.forEach(label => {
-      mainGroup.add(createLabel(label.text, label.pos));
-    });
-
-    // 3. 建立中點 (AE, EF, CD)
-    const midpoints = [
-      { pos: new THREE.Vector3(-1.5, 1.5, 0), name: 'AE_mid' },
-      { pos: new THREE.Vector3(0, 1.5, -1.5), name: 'EF_mid' },
-      { pos: new THREE.Vector3(0, -1.5, 1.5), name: 'CD_mid' },
-    ];
-
-    const pointGeometry = new THREE.SphereGeometry(0.15, 32, 32);
-    const pointMaterial = new THREE.MeshStandardMaterial({ 
-      color: 0x991b1b, // red-800
-      roughness: 0.3,
-      metalness: 0.2
-    });
-
-    midpoints.forEach(p => {
-      const sphere = new THREE.Mesh(pointGeometry, pointMaterial);
-      sphere.position.copy(p.pos);
-      mainGroup.add(sphere);
-    });
-
-    // 4. 建立截面形狀 (正六邊形)
-    const sectionGroup = new THREE.Group();
-    sectionGroup.visible = stateRef.current.showSection;
-    sectionRef.current = sectionGroup;
-    mainGroup.add(sectionGroup);
-
-    const hexVertices = [
-      new THREE.Vector3(-1.5, 1.5, 0),    // AE 中點
-      new THREE.Vector3(0, 1.5, -1.5),    // EF 中點
-      new THREE.Vector3(1.5, 0, -1.5),    // FG 中點 (推導出)
-      new THREE.Vector3(1.5, -1.5, 0),    // GH 中點 (推導出)
-      new THREE.Vector3(0, -1.5, 1.5),    // CD 中點
-      new THREE.Vector3(-1.5, 0, 1.5),    // AC 中點 (推導出)
-    ];
-
-    // 繪製六邊形外框
-    const hexGeometry = new THREE.BufferGeometry().setFromPoints([...hexVertices, hexVertices[0]]);
-    const hexMaterial = new THREE.LineBasicMaterial({ 
-      color: 0x047857, // emerald-700
-      linewidth: 3 
-    });
-    const hexLine = new THREE.Line(hexGeometry, hexMaterial);
-    sectionGroup.add(hexLine);
-
-    // 繪製六邊形內部半透明面
-    const hexShape = new THREE.Shape();
-    hexShape.moveTo(hexVertices[0].x, hexVertices[0].y); // 投影到 2D 簡化處理
-    // 這裡為了簡單，我們直接用自訂幾何體建立面
-    
-    // 計算中心點
-    const center = new THREE.Vector3(0,0,0);
-    
-    // 建立三角扇形
-    const faceGeometry = new THREE.BufferGeometry();
-    const vertices = [];
-    const indices = [];
-    
-    vertices.push(center.x, center.y, center.z);
-    hexVertices.forEach(v => vertices.push(v.x, v.y, v.z));
-    
-    for(let i=1; i<=6; i++) {
-      indices.push(0, i, i === 6 ? 1 : i+1);
-    }
-    
-    faceGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    faceGeometry.setIndex(indices);
-    faceGeometry.computeVertexNormals();
-
-    const faceMaterial = new THREE.MeshBasicMaterial({ 
-      color: 0x10b981, // emerald-500
-      transparent: true,
-      opacity: 0.15,
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
-    
-    const hexMesh = new THREE.Mesh(faceGeometry, faceMaterial);
-    sectionGroup.add(hexMesh);
-
-    // 5. 建立切割平面 (無限大平面示意)
-    const planeGeom = new THREE.PlaneGeometry(15, 15);
-    const planeMat = new THREE.MeshBasicMaterial({ 
-      color: 0x3b82f6, // blue-500
-      transparent: true,
-      opacity: 0.1,
-      side: THREE.DoubleSide,
-      depthWrite: false
-    });
-    const clippingPlane = new THREE.Mesh(planeGeom, planeMat);
-    
-    // 計算平面的法向量與旋轉
-    // 平面通過 AE(mid), EF(mid), CD(mid)
-    const v1 = new THREE.Vector3().subVectors(midpoints[1].pos, midpoints[0].pos);
-    const v2 = new THREE.Vector3().subVectors(midpoints[2].pos, midpoints[0].pos);
-    const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
-    
-    // 設定平面的旋轉以對齊法向量
-    const lookAtPoint = new THREE.Vector3().addVectors(center, normal);
-    clippingPlane.lookAt(lookAtPoint);
-    clippingPlane.visible = stateRef.current.showPlane;
-    planeRef.current = clippingPlane;
-    
-    mainGroup.add(clippingPlane);
-
-    // 動畫迴圈
-    let animationId: number;
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-      if (controlsRef.current) controlsRef.current.update();
-      renderer.render(scene, camera);
-    };
-    animate();
-
-    const handleResize = () => {
-      if (!containerRef.current) return;
-      camera.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationId);
-      if (containerRef.current && containerRef.current.contains(renderer.domElement)) {
-        containerRef.current.removeChild(renderer.domElement);
-      }
-      geometry.dispose();
-      lineMaterial.dispose();
-      renderer.dispose();
-    };
-  }, []);
 
   return (
     <div className="flex w-full h-full bg-slate-50 overflow-hidden font-sans text-slate-800">
@@ -323,9 +193,12 @@ export default function CubeCrossSectionVisualizer() {
         </div>
       </div>
 
-      {/* 💡 修改 2：將 bg-gradient-to-br from-slate-50 to-slate-200/50 改為 bg-white */}
       <div className="flex-1 relative bg-white">
-        <div ref={containerRef} className="absolute inset-0 cursor-move" />
+        <Canvas camera={{ position: [5, 5, 8], fov: 45 }}>
+          {/* 強制將 Canvas 內部背景設定為白色 */}
+          <color attach="background" args={['#ffffff']} />
+          <CubeScene showPlane={showPlane} showSection={showSection} autoRotate={autoRotate} />
+        </Canvas>
         
         <div className="absolute top-6 right-6 z-10">
           <button
